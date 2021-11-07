@@ -1,0 +1,154 @@
+sudo yum update -y
+```
+$ sudo amazon-linux-extras install ansible2 -y
+```(y)
+$ ansible --version
+```
+ansible 2.9.23
+  config file = /etc/ansible/ansible.cfg
+  configured module search path = [u'/home/ec2-user/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/lib/python2.7/site-packages/ansible
+  executable location = /usr/bin/ansible
+  python version = 2.7.18 (default, Jun 10 2021, 00:11:02) [GCC 7.3.1 20180712 (Red Hat 7.3.1-13)]
+
+$ sudo su
+```
+$ cd /etc/ansible/
+```
+$ ls
+```
+ansible.cfg  hosts  roles
+
+$ sudo chmod +x hosts
+$ vim hosts
+$ sudo vim /etc/ansible/hosts
+
+
+```
+$ 
+webservers]
+node1 ansible_host=172.31.80.47 ansible_user=ec2-user
+node2 ansible_host=172.31.82.52 ansible_user=ec2-user
+
+[ubuntuservers]
+node3 ansible_host=172.31.93.13 ansible_user=ubuntu
+
+[all:vars]
+ansible_ssh_private_key_file=/home/ec2-user/2078_ofc.pem
+
+[debserver]
+node[1:5]
+```
+grup oluşturma
+
+$ [testgroup:children]
+webservers
+debserver
+```
+grup birleştirme
+
+$ scp -i <pem file> <pem file> ec2-user@<public DNS name of Control Node>:/home/ec2-user
+```
+pem file getirme
+
+
+$ ansible all --list-hosts
+$ ansible all -m ping -o
+$ ansible webservers --list-hosts
+```
+CHMOD KOMUTLARI
+$ sudo chmod 777 /etc/ansible/hosts
+$ sudo chmod 777 ansible.cfg
+$ chmod 400 2078_ofc.pem
+```
+$ ansible webservers -m ping
+$ ansible node1:node2 -m ping
+$ ansible node1 -m ping
+$ ansible all -m ping -o
+```
+KOMUTLAR
+ansible all -m shell -a "ls -al test* ; cat test*"
+ansible all -m shell -a "ls ; cat test*"
+ansible webservers -m copy -a "src=testfile2 dest=/home/ec2-user/testfile2"
+ansible ubuntuserver -m copy -a "src=testfile2 dest=/home/ubuntu/testfile2"
+ansible-doc apt
+ansible-doc yum
+ansible --list-hosts \!webservers
+ansible --list-hosts webservers
+ansible-playbook -b playbook5.yml
+ansible-playbook playbook5.yml
+ansible-playbook -b playbook6.yml --check
+ansible-playbook -b playbook6.yml --list-hosts
+ansible-playbook -b playbook6.yml --list-tasks
+ansible node1:node2:node3 -m gather_facts | grep ansible_os_family
+ansible all -m shell -a "cd .. ; ls"
+
+
+uyarıları kaldırma
+$ sudo vim /etc/ansible/ansible.cfg
+```
+eklenen bölge
+27.1
+#module_lang    = C
+#module_set_locale = False
+interpreter_python=auto_silent 
+
+# plays will gather facts by default, which contain information about
+# the remote system.
+.
+.
+71.1
+host_key_checking = False
+```
+$ ansible webservers -a "uptime"
+```
+$ ansible webservers -m shell -a "systemctl status sshd"
+```
+$ ansible webservers -m command -a 'df -h'
+```
+$ ansible webservers -m copy -a "src=testfile dest=/home/ec2-user/testfile"
+```
+$ ansible node1 -m shell -a "echo Hello Clarusway > /home/ec2-user/testfile2 ; cat testfile2"
+```
+$ ansible node1:node2 -m shell -a "ls"
+
+$ ansible node3 -b -m shell -a "apt -y autoremove nginx"
+```
+$ ansible webservers -b -m shell -a "yum -y remove nginx"
+
+```
+	- ansible node3 -m setup
+	
+	- ansible node3 -m setup | grep ansible_distribution_version
+	
+	- ansible node2 -m setup | grep ansible_os_family
+	
+	- ansible node3 -m gather_facts 
+	
+	- ansible node3 -m gather_facts | grep ansible_os_family
+
+$ ansible-playbook -b playbook6.yml --list-hosts
+
+$ ansible-playbook -b playbook6.yml --list-tasks
+
+$ ansible-playbook -b playbook6.yml --check
+
+$ ansible all -m shell -a "cd .. ; ls"
+
+$ scp -i 2078_ofc.pem 2078_ofc.pem ec2-23-22-160-38.compute-1.amazonaws.com:/home/ec2-user
+
+$ scp -i oliver.pem ec2-user@ec2-54-242-33-17.compute-1.amazonaws.com:/home/ec2-user/playbook8.yml .
+
+
+https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
+
+https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#connecting-to-hosts-behavioral-inventory-parameters
+
+https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#inventory-basics-formats-hosts-and-groups
+
+https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#assigning-a-variable-to-many-machines-group-variables
+
+https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
+
+https://fossies.org/linux/ansible/lib/ansible/modules/packaging/os/yum.py
+
